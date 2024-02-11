@@ -1,50 +1,58 @@
-import math
+def next_palindrome(from_num, radix):
+    if not 2 <= radix <= 36:
+        return False
 
-def delka_usecky(x1, y1, x2, y2):
-  return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+    if is_palindrome(from_num, radix):
+        print(from_num + 1)
+        return True
 
-def jsou_stejne(x1, y1, x2, y2):
-  return abs(x1 - x2) < 1e-6 and abs(y1 - y2) < 1e-6
+    num_digits = get_num_digits(from_num, radix)
 
-def lezi_na_primce(x1, y1, x2, y2, x3, y3):
-  return abs((x3 - x1) * (y2 - y1) - (x2 - x1) * (y3 - y1)) < 1e-6
+    mirror_num = from_num
+    for i in range(num_digits // 2):
+        pow_radix = radix ** (num_digits - 1 - 2 * i)
+        mirror_num += (from_num // pow_radix % radix) * pow_radix
 
-def main():
-  try:
-    x1, y1 = map(float, input("Zadejte souřadnice bodu A (x, y): ").split())
-    x2, y2 = map(float, input("Zadejte souřadnice bodu B (x, y): ").split())
-    x3, y3 = map(float, input("Zadejte souřadnice bodu C (x, y): ").split())
-  except ValueError:
-    print("Některé ze zadaných souřadnic nejsou čísla.")
-    return
+    mirror_num += 1
+    while not is_palindrome(mirror_num, radix):
+        mirror_num += 1
 
+    if mirror_num >= (1 << 64):
+        return False
 
-  if jsou_stejne(x1, y1, x2, y2) and jsou_stejne(x2, y2, x3, y3):
-    print("Všechny body splývají.")
-    return
-  if jsou_stejne(x1, y1, x2, y2):
-    print("První a druhý bod splývají.")
-    return
-  if jsou_stejne(x2, y2, x3, y3):
-    print("Druhý a třetí bod splývají.")
-    return
-  if jsou_stejne(x1, y1, x3, y3):
-    print("První a třetí bod splývají.")
-    return
+    print(mirror_num)
+    return True
 
-
-  if lezi_na_primce(x1, y1, x2, y2, x3, y3):
-    print("Body leží na jedné přímce.")
-    # Určení prostředního bodu
-    if delka_usecky(x1, y1, x2, y2) > delka_usecky(x1, y1, x3, y3):
-      print("Prostřední bod je:", x3, y3)
-    elif delka_usecky(x2, y2, x3, y3) > delka_usecky(x1, y1, x3, y3):
-      print("Prostřední bod je:", x1, y1)
-    else:
-      print("Prostřední bod je:", x2, y2)
+def is_palindrome(num, radix):
+  num_digits = get_num_digits(num, radix)
+  for i in range(num_digits // 2):
+    pow_radix = radix ** (num_digits - 1 - 2 * i)
+    if (num // pow_radix % radix) != (num % radix):
+      return True
   else:
-    print("Body neleží na jedné přímce.")
+    return False
+  
+def get_num_digits(num, radix):
+    num_digits = 1
+    while num // radix > 0:
+        num_digits += 1
+        num //= radix
 
+    return num_digits
 
-if __name__ == "__main__":
-  main()
+while True:
+    try:
+        from_num_str = input("Zadejte from_num: ")
+        radix_str = input("Zadejte radix: ")
+
+        from_num = int(from_num_str)
+        radix = int(radix_str)
+
+        if not next_palindrome(from_num, radix):
+            print("Nenalezeno žádné větší palindrom v zadané číselné soustavě.")
+        else:
+            print("Zadané číslo je palindrom:", is_palindrome(from_num, radix))
+
+    except ValueError:
+        print("Neplatný vstup.")
+    break
